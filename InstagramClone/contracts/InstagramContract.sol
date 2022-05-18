@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.16 <8.13.0;
+pragma solidity ^0.8.0;
 
 contract Instagram {
      string public appName ="Decentgram";
@@ -13,45 +13,40 @@ contract Instagram {
      }
 
 
-     event ImageCreated{
-          uint id;
-          string hash;
-          string description;
-          uint tipAmount;
-          address payable author;
-     }
+     event ImageCreated(
+          uint id,
+          string hash,
+          string description,
+          uint tipAmount,
+          address payable author
+     );
 
-     event ImageTipped{
-           uint id;
-          string hash;
-          string description;
-          uint tipAmount;
-          address payable author;
-     }
+     event ImageTipped(uint id,string hash,string description,uint tipAmount,address payable author);
 
      mapping(uint => Image) public images;
-     public uint imageCount=0;
+     uint public imageCount=0;
 
      function uploadImage(string memory _imgHash,string memory _description) public{
           require(bytes(_imgHash).length >0,"Image Hash lenght is less than 1");
           require(bytes(_description).length >0,"Description lenght is less than 1");
+address payable masg= payable(msg.sender);
+          require(masg !=address(0x0));
 
-          require(author ==msg.sender,"An author should be same")
+          imageCount =imageCount+1;
 
-          imageCount +=1;
+          images[imageCount] =Image(imageCount,_imgHash,_description,0,masg);
 
-          images[imageCount] =Image(imageCount,_imgHash,_description,0,msg.sender);
-
-          emit ImageCreated(imageCount,_imgHash,_description,0,msg.sender);
+          emit ImageCreated(imageCount,_imgHash,_description,0,masg);
      }
 
-     function  tipImageUpload(uint _id) public{
+     function  tipImageUpload(uint _id) public payable{
           require(_id > 0 && _id <= imageCount,"Id is invalid");
-          Image memeory _image = images[_id];
+
+          Image memory _image = images[_id];
 
           address payable _author = _image.author;
 
-          address(_author).transfer(msg.value);
+          _author.transfer(msg.value);
 
           _image.tipAmount += msg.value;
 
